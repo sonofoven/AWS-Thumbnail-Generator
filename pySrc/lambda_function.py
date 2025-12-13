@@ -44,8 +44,8 @@ def handler(event, context):
         return {'statusCode': 400,
                 'body': json.dumps(f'Failed to process image. {e}')}
 
-        # Create output name
-        destKey = os.path.splitext(key)[0] + "_thumb.jpg"
+    # Create output name
+    destKey = os.path.splitext(key)[0] + "_thumb.jpg"
 
     try:
         # Save converted buffer to the s3 bucket
