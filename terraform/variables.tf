@@ -9,3 +9,9 @@ variable "output_bucket_name" {
   type = string
   default = "s3-thumbnailer-gen-output"
 }
+
+variable "lambda_func_name" {
+  description = "Name of the lambda function"
+  type = string
+  default = "Thumbnail-Generator"
+}

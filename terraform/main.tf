@@ -8,6 +8,11 @@ data "aws_region" "current" {}
 locals {
   account_id = data.aws_caller_identity.current.account_id
   region = data.aws_region.current.name
+
+  policy_arns = {
+    s3Access = aws_iam_policy.AWS_S3_Put_Get.arn
+    logAccess = aws_iam_policy.AWS_Logging_Access.arn
+  }
 }
 
 resource "aws_iam_policy" "AWS_S3_Put_Get" { #
@@ -32,7 +37,7 @@ resource "aws_iam_policy" "AWS_S3_Put_Get" { #
   })
 }
 
-resource "aws_iam_policy" "AWS_Logging_Access" {
+resource "aws_iam_policy" "AWS_Logging_Access" { #
   name        = "AWS_Logging_Access"
   description = "Enables creation of logging groups, streams, and events"
 
@@ -46,28 +51,22 @@ resource "aws_iam_policy" "AWS_Logging_Access" {
           "logs:CreateLogStream",
           "logs:PutLogEvents"
         ]
-        Resource = "arn:aws:logs:${local.region}:${local.account_id}:log-group:/aws/lambda/Thumbnail-Generator:*" # Change this to a generated variable from the lambda func
+        Resource = "arn:aws:logs:${local.region}:${local.account_id}:log-group:/aws/lambda/${var.lambda_func_name}:*"
       }
     ]
   })
 }
 
-resource "aws_iam_role" "Lambda_S3_Access_Role" {
+resource "aws_iam_role_policy_attachment" "attach" { #
+  for_each = local.policy_arns
+  role = aws_iam_role.Lambda_S3_Access_Role
+  policy_arn = each.value
+}
+
+resource "aws_iam_role" "Lambda_S3_Access_Role" { #
   name = "LambdaS3AccessRole"
   description = "Gives lambda access to execution, logging, and s3"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Description = "Enable s3 Put & Get"
-        Principal = {
-          Service = "ec2.amazonaws.com"
-        }
-      },
-    ]
-  })
+  assume_role_policy = data.aws_iam_policy_document.lambda_assume_role.json
 }
 
 
