@@ -1,0 +1,73 @@
+provider "aws" {
+  region = "us-west-1"
+}
+
+data "aws_caller_identity" "current" {}
+data "aws_region" "current" {} 
+
+locals {
+  account_id = data.aws_caller_identity.current.account_id
+  region = data.aws_region.current.name
+}
+
+resource "aws_iam_policy" "AWS_S3_Put_Get" { #
+  name        = "AWS_S3_Put_Get"
+  path        = "/"
+  description = "Enables Put & Get for the thumbnailer I/O bucket"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action = ["s3:GetObject",
+                  "s3:PutObject"]
+        Resource = ["arn:aws:s3:::${var.input_bucket_name}",
+                    "arn:aws:s3:::${var.input_bucket_name}/*",
+                    "arn:aws:s3:::${var.output_bucket_name}",
+                    "arn:aws:s3:::${var.output_bucket_name}/*"
+        ]
+      },
+    ]
+  })
+}
+
+resource "aws_iam_policy" "AWS_Logging_Access" {
+  name        = "AWS_Logging_Access"
+  description = "Enables creation of logging groups, streams, and events"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ]
+        Resource = "arn:aws:logs:${local.region}:${local.account_id}:log-group:/aws/lambda/Thumbnail-Generator:*" # Change this to a generated variable from the lambda func
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role" "Lambda_S3_Access_Role" {
+  name = "LambdaS3AccessRole"
+  description = "Gives lambda access to execution, logging, and s3"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Description = "Enable s3 Put & Get"
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
+      },
+    ]
+  })
+}
+
+
