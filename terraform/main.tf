@@ -102,6 +102,17 @@ resource "aws_s3_bucket" "S3_Output_Bucket" {
   }
 }
 
+## Create ECR
+
+resource "aws_ecr_repository" "Lambda_Thumbnail_Generator" {
+  name                 = "lambda-thumbnail-generator"
+  image_tag_mutability = "MUTABLE"
+
+  image_scanning_configuration {
+    scan_on_push = true
+  }
+}
+
 ### Provision lambda once container uploaded to ECR ###
 
 
