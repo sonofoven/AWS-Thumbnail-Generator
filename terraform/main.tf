@@ -15,6 +15,10 @@ locals {
   }
 }
 
+### Provision underlying resources ###
+
+## Create policies and attach to role
+
 resource "aws_iam_policy" "AWS_S3_Put_Get" { #
   name        = "AWS_S3_Put_Get"
   path        = "/"
@@ -57,16 +61,47 @@ resource "aws_iam_policy" "AWS_Logging_Access" { #
   })
 }
 
-resource "aws_iam_role_policy_attachment" "attach" { #
+resource "aws_iam_role_policy_attachment" "attach" { # Attach policies to role
   for_each = local.policy_arns
   role = aws_iam_role.Lambda_S3_Access_Role
   policy_arn = each.value
 }
 
-resource "aws_iam_role" "Lambda_S3_Access_Role" { #
+data "aws_iam_policy_document" "lambda_assume_role" {
+  statement {
+    actions = ["sts:AssumeRole"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["lambda.amazonaws.com"]
+    }
+  }
+}
+
+resource "aws_iam_role" "Lambda_S3_Access_Role" { # Create base role for policies to attach to
   name = "LambdaS3AccessRole"
   description = "Gives lambda access to execution, logging, and s3"
   assume_role_policy = data.aws_iam_policy_document.lambda_assume_role.json
 }
+
+## Create Buckets
+
+resource "aws_s3_bucket" "S3_Input_Bucket" {
+  bucket = var.input_bucket_name
+
+  tags = {
+    Name = "Thumbnail Generator"
+  }
+}
+
+resource "aws_s3_bucket" "S3_Output_Bucket" {
+  bucket = var.output_bucket_name
+
+  tags = {
+    Name = "Thumbnail Generator"
+  }
+}
+
+### Provision lambda once container uploaded to ECR ###
 
 
