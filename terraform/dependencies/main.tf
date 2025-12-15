@@ -1,16 +1,30 @@
+### Define terraform setup & vars
+
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.92"
+    }
+  }
+
+  required_version = ">= 1.2"
+}
+
+
 provider "aws" {
-  region = "us-west-1"
+  region = var.aws_region
 }
 
 data "aws_caller_identity" "current" {}
-data "aws_region" "current" {} 
+data "aws_region" "current" {}
 
 locals {
   account_id = data.aws_caller_identity.current.account_id
-  region = data.aws_region.current.name
+  region     = data.aws_region.current.name
 
   policy_arns = {
-    s3Access = aws_iam_policy.s3_put_get.arn
+    s3Access  = aws_iam_policy.s3_put_get.arn
     logAccess = aws_iam_policy.logging_access.arn
   }
 }
@@ -19,7 +33,7 @@ locals {
 
 ## Create policies and attach to role
 
-resource "aws_iam_policy" "s3_put_get" { #
+resource "aws_iam_policy" "s3_put_get" {
   name        = "AWS_S3_Put_Get"
   path        = "/"
   description = "Enables Put & Get for the thumbnailer I/O bucket"
@@ -28,20 +42,20 @@ resource "aws_iam_policy" "s3_put_get" { #
     Version = "2012-10-17"
     Statement = [
       {
-        Effect   = "Allow"
+        Effect = "Allow"
         Action = ["s3:GetObject",
-                  "s3:PutObject"]
+        "s3:PutObject"]
         Resource = ["arn:aws:s3:::${var.input_bucket_name}",
-                    "arn:aws:s3:::${var.input_bucket_name}/*",
-                    "arn:aws:s3:::${var.output_bucket_name}",
-                    "arn:aws:s3:::${var.output_bucket_name}/*"
+          "arn:aws:s3:::${var.input_bucket_name}/*",
+          "arn:aws:s3:::${var.output_bucket_name}",
+          "arn:aws:s3:::${var.output_bucket_name}/*"
         ]
       },
     ]
   })
 }
 
-resource "aws_iam_policy" "logging_access" { #
+resource "aws_iam_policy" "logging_access" {
   name        = "AWS_Logging_Access"
   description = "Enables creation of logging groups, streams, and events"
 
@@ -62,8 +76,8 @@ resource "aws_iam_policy" "logging_access" { #
 }
 
 resource "aws_iam_role_policy_attachment" "attach" { # Attach policies to role
-  for_each = local.policy_arns
-  role = aws_iam_role.lambda_s3_access_role
+  for_each   = local.policy_arns
+  role       = aws_iam_role.lambda_s3_access_role.name
   policy_arn = each.value
 }
 
@@ -79,8 +93,8 @@ data "aws_iam_policy_document" "lambda_assume_role" {
 }
 
 resource "aws_iam_role" "lambda_s3_access_role" { # Create base role for policies to attach to
-  name = "LambdaS3AccessRole"
-  description = "Gives lambda access to execution, logging, and s3"
+  name               = "LambdaS3AccessRole"
+  description        = "Gives lambda access to execution, logging, and s3"
   assume_role_policy = data.aws_iam_policy_document.lambda_assume_role.json
 }
 
