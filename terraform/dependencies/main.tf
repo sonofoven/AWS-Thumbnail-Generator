@@ -93,7 +93,7 @@ data "aws_iam_policy_document" "lambda_assume_role" {
 }
 
 resource "aws_iam_role" "lambda_s3_access_role" { # Create base role for policies to attach to
-  name               = "LambdaS3AccessRole"
+  name               = var.lambda_role_name
   description        = "Gives lambda access to execution, logging, and s3"
   assume_role_policy = data.aws_iam_policy_document.lambda_assume_role.json
 }
@@ -119,12 +119,10 @@ resource "aws_s3_bucket" "output_bucket" {
 ## Create ECR
 
 resource "aws_ecr_repository" "lambda_repo" {
-  name                 = "lambda-thumbnail-generator"
+  name                 = var.ecr_repo_name
   image_tag_mutability = "MUTABLE"
 
   image_scanning_configuration {
     scan_on_push = true
   }
 }
-
-### Provision lambda once container uploaded to ECR ###

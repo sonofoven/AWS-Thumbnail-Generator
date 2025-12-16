@@ -18,3 +18,12 @@ variable "lambda_func_name" {
   type        = string
 }
 
+variable "lambda_role_name" {
+  description = "Name of the role that lambda needs"
+  type        = string
+}
+
+variable "ecr_repo_name" {
+  description = "Name of ecr repository"
+  type        = string
+}
