@@ -30,5 +30,5 @@ variable "ecr_repo_name" {
 
 variable "ecr_registry_id" {
   description = "Registry id of the ecr repository"
-  type = string
+  type        = string
 }

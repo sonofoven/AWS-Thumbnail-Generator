@@ -28,9 +28,9 @@ data "aws_s3_bucket" "s3_input_bucket" {
 }
 
 locals {
-  ecr_repo_url = data.aws_ecr_repository.ecr_repo.repository_url
+  ecr_repo_url    = data.aws_ecr_repository.ecr_repo.repository_url
   lambda_role_arn = data.aws_iam_role.lambda_s3_access_role.arn
-  s3_input_arn = data.aws_s3_bucket.s3_input_bucket.arn
+  s3_input_arn    = data.aws_s3_bucket.s3_input_bucket.arn
 }
 
 ### Provision lambda function + triggers after container has been uploaded
@@ -43,9 +43,9 @@ resource "aws_lambda_function" "thumbnail_generator" {
   role          = local.lambda_role_arn
   package_type  = "Image"
   image_uri     = "${local.ecr_repo_url}:latest"
-  runtime = "python3.12"
+  runtime       = "python3.12"
 
-  architectures = ["x86_64"] 
+  architectures = ["x86_64"]
 }
 
 ## Create triggers w/ permissions
