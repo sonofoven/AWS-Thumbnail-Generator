@@ -102,6 +102,7 @@ resource "aws_iam_role" "lambda_s3_access_role" { # Create base role for policie
 
 resource "aws_s3_bucket" "input_bucket" {
   bucket = var.input_bucket_name
+  force_destroy = true
 
   tags = {
     Name = "Thumbnail Generator"
@@ -110,6 +111,7 @@ resource "aws_s3_bucket" "input_bucket" {
 
 resource "aws_s3_bucket" "output_bucket" {
   bucket = var.output_bucket_name
+  force_destroy = true
 
   tags = {
     Name = "Thumbnail Generator"
@@ -121,6 +123,7 @@ resource "aws_s3_bucket" "output_bucket" {
 resource "aws_ecr_repository" "lambda_repo" {
   name                 = var.ecr_repo_name
   image_tag_mutability = "MUTABLE"
+  force_delete = true
 
   image_scanning_configuration {
     scan_on_push = true

@@ -8,6 +8,11 @@ variable "input_bucket_name" {
   type        = string
 }
 
+variable "output_bucket_name" {
+  description = "Name of the input bucket for the pipeline"
+  type        = string
+}
+
 variable "lambda_func_name" {
   description = "Name of the lambda function"
   type        = string

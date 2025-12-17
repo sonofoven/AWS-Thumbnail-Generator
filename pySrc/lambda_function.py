@@ -4,7 +4,7 @@ import json
 import boto3
 import os
 
-destBucket = "novesen-s3-thumb-gen-output"
+destBucket = "novesen-s3-thumbnail-gen-output"
 
 size = (128, 128)
 s3Client = boto3.client('s3')
@@ -56,6 +56,7 @@ def handler(event, context):
             ContentType="image/jpeg"
         )
     except Exception as e:
+        print(f'Bucket attempted was: {destBucket} and key is {destKey}')
         print(f'Failed to put object. {e}')
         return {'statusCode': 400,
                 'body': json.dumps(f'Failed to put object. {e}')}
