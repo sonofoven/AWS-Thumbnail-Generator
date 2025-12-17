@@ -36,10 +36,10 @@ jobs:
             ./pushImage.sh 
             "${{ secrets.ECR_REPOSITORY }}" 
             "${{ secrets.AWS_REGION }}"
-  
+        
       - name: Update Lambda to latest image from ECR
         if: github.event_name == 'push'
-        run: >
-            aws lambda update-function-code
-              --function-name ${{ secrets.LAMBDA_FUNCTION_NAME }}
+        run: |
+            aws lambda update-function-code \
+              --function-name ${{ secrets.LAMBDA_FUNCTION_NAME }} \
               --image-uri "${{ secrets.ECR_REPOSITORY }}:latest"
