@@ -39,7 +39,7 @@ jobs:
         working-directory: ./scripts
         if: github.event_name == 'push'
         run: > 
-            ./pushImage 
+            ./pushImage.sh 
             "${{ secrets.ECR_REPOSITORY }}" 
             "${{ secrets.AWS_REGION }}"
   
