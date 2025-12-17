@@ -44,12 +44,12 @@ jobs:
 
     - name: Terraform Plan
       working-directory: ./terraform/dependencies
-      run: terraform plan -input=false
+      run: terraform plan -input=false -var-file="../shared.tfvars"
 
     - name: Terraform Apply
       working-directory: ./terraform/dependencies
       if: github.event_name == 'push'
-      run: terraform apply -auto-approve -input=false
+      run: terraform apply -auto-approve -input=false -var-file="../shared.tfvars"
 
     - name: Capture Terraform Output
       working-directory: ./terraform/dependencies
@@ -154,12 +154,12 @@ jobs:
 
     - name: Terraform Plan
       working-directory: ./terraform/lambda
-      run: terraform plan -input=false
+      run: terraform plan -input=false -var-file="../shared.tfvars"
 
     - name: Terraform Apply
       working-directory: ./terraform/lambda
       if: github.event_name == 'push'
-      run: terraform apply -auto-approve -input=false
+      run: terraform apply -auto-approve -input=false -var-file="../shared.tfvars"
 
     - name: Update Lambda to latest image from ECR jic this isn't the first deployment
       if: github.event_name == 'push'
