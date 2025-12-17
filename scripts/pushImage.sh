@@ -14,7 +14,7 @@ aws ecr get-login-password --region ${AWS_REGION} \
       "$ECR_REGISTRY_ID"
 
 # Build
-docker-buildx build --platform linux/amd64 \
+docker buildx build --platform linux/amd64 \
         --provenance=false \
         -t lambda-thumbnail-generator .
 
