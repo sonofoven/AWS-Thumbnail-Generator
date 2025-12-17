@@ -27,8 +27,3 @@ variable "ecr_repo_name" {
   description = "Name of ecr repository"
   type        = string
 }
-
-variable "ecr_registry_id" {
-  description = "Registry id of the ecr repository"
-  type        = string
-}
