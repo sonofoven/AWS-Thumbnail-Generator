@@ -35,19 +35,24 @@ jobs:
       uses: hashicorp/setup-terraform@v1
 
     - name: Terraform Init
-      run: terraform init -chdir=terraform/dependencies
+      working-directory: ./terraform/dependencies
+      run: terraform init
 
     - name: Terraform Format
-      run: terraform fmt -check -chdir=terraform/dependencies
+      working-directory: ./terraform/dependencies
+      run: terraform fmt -check
 
     - name: Terraform Plan
-      run: terraform plan -input=false -chdir=terraform/dependencies
+      working-directory: ./terraform/dependencies
+      run: terraform plan -input=false
 
     - name: Terraform Apply
+      working-directory: ./terraform/dependencies
       if: github.event_name == 'push'
-      run: terraform apply -auto-approve -input=false -chdir=terraform/dependencies
+      run: terraform apply -auto-approve -input=false
 
     - name: Capture Terraform Output
+      working-directory: ./terraform/dependencies
       id: tf_output
       run: |
           ecr_repo_url=$(terraform -chdir=terraform/dependencies output -raw ecr_repository_url)
@@ -140,17 +145,21 @@ jobs:
       uses: hashicorp/setup-terraform@v1
 
     - name: Terraform Init
-      run: terraform init -chdir=terraform/lambda
+      working-directory: ./terraform/lambda
+      run: terraform init
 
     - name: Terraform Format
-      run: terraform fmt -check -chdir=terraform/lambda
+      working-directory: ./terraform/lambda
+      run: terraform fmt -check
 
     - name: Terraform Plan
-      run: terraform plan -input=false -chdir=terraform/lambda
+      working-directory: ./terraform/lambda
+      run: terraform plan -input=false
 
     - name: Terraform Apply
+      working-directory: ./terraform/lambda
       if: github.event_name == 'push'
-      run: terraform apply -auto-approve -input=false -chdir=terraform/lambda
+      run: terraform apply -auto-approve -input=false
 
     - name: Update Lambda to latest image from ECR jic this isn't the first deployment
       if: github.event_name == 'push'
