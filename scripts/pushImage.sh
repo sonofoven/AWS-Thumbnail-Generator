@@ -15,11 +15,7 @@ aws ecr get-login-password --region ${AWS_REGION} \
 
 # Build
 docker buildx build --platform linux/amd64 \
-        --provenance=false \
-        -t lambda-thumbnail-generator .
-
-# Tag
-docker tag lambda-thumbnail-generator:latest "${ECR_REPOSITORY_URL}:latest"
-
-# Push
-docker push "${ECR_REPOSITORY_URL}:latest"
+  --provenance=false \
+  -t "${ECR_REPOSITORY_URL}:latest" \
+  --push \
+  .
