@@ -13,6 +13,8 @@ provider "aws" {
   region = var.aws_region
 }
 
+## Grab relevant data from setup stage
+
 data "aws_iam_role" "lambda_s3_access_role" {
   name = var.lambda_role_name
 }
@@ -25,13 +27,14 @@ data "aws_s3_bucket" "s3_input_bucket" {
   bucket = var.input_bucket_name
 }
 
-### Provision lambda function + triggers after container has been uploaded
-
 locals {
   ecr_repo_url = data.aws_ecr_repository.ecr_repo.repository_url
   lambda_role_arn = data.aws_iam_role.lambda_s3_access_role.arn
   s3_input_arn = data.aws_s3_bucket.s3_input_bucket.arn
 }
+
+### Provision lambda function + triggers after container has been uploaded
+
 
 ## Create lambda function
 

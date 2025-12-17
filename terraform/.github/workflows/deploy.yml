@@ -1,0 +1,164 @@
+name: 'Deploy AWS Lambda'
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  setup_environment:
+    name: 'Setup infra dependencies'
+    runs-on: ubuntu-latest
+
+    outputs:
+      ecr_repo_url: ${{ steps.tf_output.outputs.ecr_repo_url }}
+      lambda_func_name: ${{ steps.tf_output.outputs.lambda_func_name }}
+      ecr_reg_url: ${{ steps.tf_output.outputs.ecr_reg_url }}
+      aws_region: ${{ steps.tf_output.outputs.aws_region }}
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-west-1 
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v1
+
+    - name: Terraform Init
+      run: terraform init -chdir=terraform/dependencies
+
+    - name: Terraform Format
+      run: terraform fmt -check -chdir=terraform/dependencies
+
+    - name: Terraform Plan
+      run: terraform plan -input=false -chdir=terraform/dependencies
+
+    - name: Terraform Apply
+      if: github.event_name == 'push'
+      run: terraform apply -auto-approve -input=false -chdir=terraform/dependencies
+
+    - name: Capture Terraform Output
+      id: tf_output
+      run: |
+          ecr_repo_url=$(terraform -chdir=terraform/dependencies output -raw ecr_repository_url)
+          lambda_func_name=$(terraform -chdir=terraform/dependencies output -raw lambda_func_name)
+          ecr_reg_url=$(terraform -chdir=terraform/dependencies output -raw ecr_registry_url)
+          aws_region=$(terraform -chdir=terraform/dependencies output -raw aws_region)
+          echo "ecr_repo_url=$ecr_repo_url" >> "$GITHUB_OUTPUT"
+          echo "lambda_func_name=$lambda_func_name" >> "$GITHUB_OUTPUT"
+          echo "ecr_reg_url=$ecr_reg_url" >> "$GITHUB_OUTPUT"
+          echo "aws_region=$aws_region" >> "$GITHUB_OUTPUT"
+
+  build_and_push:
+    name: 'Build and push container image to ECR'
+    runs-on: ubuntu-latest
+    needs: setup_environment
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (static keys)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-1 
+
+
+      - name: Set up Docker
+        uses: docker/setup-docker-action@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to ECR Registry
+        run: |
+            ECR_REGISTRY=${{ needs.setup_environment.outputs.ecr_reg_url }}
+            AWS_REGION=${{ needs.setup_environment.outputs.aws_region }}
+            
+            aws ecr get-login-password --region ${AWS_REGION} \
+              | docker login \
+                  --username AWS \
+                  --password-stdin \
+                  "$ECR_REGISTRY"
+
+      - name: Build Dockerfile
+        working-directory: ./pySrc
+        run: |
+            docker buildx build --platform linux/amd64 \
+            --provenance=false \
+            -t lambda-thumbnail-generator .
+
+      - name: Tag Docker Container
+        working-directory: ./pySrc
+        run: |
+            ECR_REPO=${{ needs.setup_environment.outputs.ecr_repo_url }}
+
+            docker tag lambda-thumbnail-generator:latest "${ECR_REPO}:latest"
+
+      - name: Push Docker Container to ECR
+        working-directory: ./pySrc
+        if: github.event_name == 'push'
+        run: | 
+            ECR_REPO=${{ needs.setup_environment.outputs.ecr_repo_url }}
+
+            docker push "${ECR_REPO}:latest"
+
+  deploy-lambda:
+    name: 'Deploy Lambda'
+    runs-on: ubuntu-latest
+    needs: 
+      - setup_environment
+      - build_and_push
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials (static keys)
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-west-1 
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v1
+
+    - name: Terraform Init
+      run: terraform init -chdir=terraform/lambda
+
+    - name: Terraform Format
+      run: terraform fmt -check -chdir=terraform/lambda
+
+    - name: Terraform Plan
+      run: terraform plan -input=false -chdir=terraform/lambda
+
+    - name: Terraform Apply
+      if: github.event_name == 'push'
+      run: terraform apply -auto-approve -input=false -chdir=terraform/lambda
+
+    - name: Update Lambda to latest image from ECR jic this isn't the first deployment
+      if: github.event_name == 'push'
+      run: |
+          ECR_REPO=${{ needs.setup_environment.outputs.ecr_repo_url }}
+          LAMBDA_NAME=${{ needs.setup_environment.outputs.lambda_func_name }}
+
+          aws lambda update-function-code \
+            --function-name ${LAMBDA_NAME} \
+            --image-uri "${ECR_REPO}:latest"
+
