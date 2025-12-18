@@ -4,7 +4,7 @@ AWS Lambda Thumbnail Generator is a serverless thumbnail generator built on AWS 
 
 When a new image is uploaded to the configured S3 bucket, the Lambda function is triggered, downloads the image, generates a thumbnail using Pillow, and writes the result to a destination bucket.
 
-Development of the lambda runtime is made easy by the Github Actions integration.
+Development of the lambda runtime is made easy by the Github Actions integration. 
 
 ---
 
@@ -71,7 +71,7 @@ This script will:
 
 1. Initialize and apply `terraform/dependencies` to provision core resources (ECR repo, region, and other dependencies), then capture outputs such as `ecr_repository_url`, `aws_region`, and `lambda_func_name`.
 2. Build and push the Lambda container image from `pySrc` to the new ECR repository using `pushImage.sh`.
-3. Initialize and apply `terraform/lambda` to create the Lambda function wired up to the S3 bucket.
+3. Initialize and apply `terraform/lambda` to create the Lambda function wired up to the input S3 bucket.
 4. Store the key bootstrap outputs into GitHub repo secrets: `ECR_REPOSITORY`, `AWS_REGION`, and `LAMBDA_FUNCTION_NAME`, enabling a GitHub Actions workflow to build and deploy updates on pushes (typically to `main`).
 
 After this completes, the account is ready to act as a thumbnail generator host.
@@ -104,7 +104,7 @@ This project ships with an automated deployment workflow defined in `.github/wor
 3. Uses Docker Buildx to build and push the Lambda container image to the ECR repository specified by the `ECR_REPOSITORY` secret (via `scripts/pushImage.sh`).
 4. Updates the running Lambda function to the newly built `:latest` image in ECR using the `LAMBDA_FUNCTION_NAME` secret.
 
-This enables a simple “push-to-main” workflow where committing code to `main` automatically builds, pushes, and deploys the updated Lambda container image.
+This enables a simple “push-to-main” workflow where committing code to `main` automatically builds, pushes, and deploys the updated Lambda container image. 
 
 ---
 
