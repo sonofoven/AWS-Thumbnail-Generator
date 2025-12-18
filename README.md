@@ -6,7 +6,6 @@ When a new image is uploaded to the configured S3 bucket, the Lambda function is
 
 Development of the lambda runtime is made easy by the Github Actions integration. 
 
----
 
 ## Features
 
@@ -16,7 +15,7 @@ Development of the lambda runtime is made easy by the Github Actions integration
 - One-command bootstrap to provision everything and push the initial image
 - GitHub Actions integration using repo secrets for ongoing deployments
 
----
+
 
 ## Project Structure
 
@@ -43,7 +42,7 @@ Development of the lambda runtime is made easy by the Github Actions integration
 
 The Lambda runtime depends on `boto3` (for S3 access) and `Pillow` (for image processing).
 
----
+
 
 ## Prerequisites
 
@@ -56,7 +55,7 @@ You will need:
 - GitHub CLI (`gh`) authenticated against the repository (for managing secrets)
 - A GitHub repository hosting this project (for CI/CD integration)
 
----
+
 
 ## Bootstrap: First-Time Setup
 
@@ -76,7 +75,7 @@ This script will:
 
 After this completes, the account is ready to act as a thumbnail generator host.
 
----
+
 
 ## Teardown
 
@@ -93,7 +92,7 @@ This script:
 - Destroys the Terraform dependencies stack
 - Deletes the GitHub repo secrets `ECR_REPOSITORY`, `AWS_REGION`, and `LAMBDA_FUNCTION_NAME`
 
----
+
 
 ## Automatic Deployment via GitHub Actions
 
@@ -106,7 +105,7 @@ This project ships with an automated deployment workflow defined in `.github/wor
 
 This enables a simple “push-to-main” workflow where committing code to `main` automatically builds, pushes, and deploys the updated Lambda container image. 
 
----
+
 
 ## Runtime Behavior
 
