@@ -97,7 +97,7 @@ This script:
 
 ## Automatic Deployment via GitHub Actions
 
-This project ships with an automated deployment workflow defined in `.github/workflows/deploy.yml`. On every push to the `main` branch, GitHub Actions:
+This project ships with an automated deployment workflow defined in `.github/workflows/deploy.yml`. On every push to the `main` branch with changes to the workflow or any file under pySrc, GitHub Actions:
 
 1. Checks out the repository.
 2. Configures AWS credentials using the `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and `AWS_REGION` secrets.

@@ -3,6 +3,10 @@ name: 'Deploy AWS Lambda'
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - 'pySrc/**'  # only run when code under pySrc changes
+      - '.github/workflows/deploy.yml' # run when workflow file changes
+
   pull_request:
 
 permissions:
