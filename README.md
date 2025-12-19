@@ -1,6 +1,6 @@
 # AWS Lambda Thumbnail Generator
 
-AWS Lambda Thumbnail Generator is a serverless thumbnail generator built on AWS Lambda and Amazon S3, with all infrastructure provisioned via Terraform. The project is designed so that a single bootstrap script can take an empty AWS account and turn it into a fully functional thumbnail service backed by a containerized Lambda function.
+AWS Lambda Thumbnail Generator (image compression, not a YouTube-esk thumbnail) is a serverless thumbnail generator built on AWS Lambda and Amazon S3, with all infrastructure provisioned via Terraform. The project is designed so that a single bootstrap script can take an empty AWS account and turn it into a fully functional thumbnail service backed by a containerized Lambda function.
 
 When a new image is uploaded to the configured S3 bucket, the Lambda function is triggered, downloads the image, generates a thumbnail using Pillow, and writes the result to a destination bucket.
 
