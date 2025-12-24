@@ -13,6 +13,6 @@ terraform destroy -auto-approve -var-file="../shared.tfvars"
 
 # Remove gh secrets
 cd ../..
-gh secret delete ECR_REPOSITORY
-gh secret delete AWS_REGION
-gh secret delete LAMBDA_FUNCTION_NAME
+gh variable delete ECR_REPOSITORY
+gh variable delete AWS_REGION
+gh variable delete LAMBDA_FUNCTION_NAME

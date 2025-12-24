@@ -35,6 +35,6 @@ echo "LAMBDA_FUNCTION_NAME=$LAMBDA_FUNCTION_NAME"
 
 # Store bootstrap info into gh secrets
 echo "<< STORING BOOTSTRAP VARS >>"
-gh secret set ECR_REPOSITORY --body "$ECR_REPOSITORY_URL"
-gh secret set AWS_REGION --body "$AWS_REGION"
-gh secret set LAMBDA_FUNCTION_NAME --body "$LAMBDA_FUNCTION_NAME"
+gh variable set ECR_REPOSITORY --body "$ECR_REPOSITORY_URL"
+gh variable set AWS_REGION --body "$AWS_REGION"
+gh variable set LAMBDA_FUNCTION_NAME --body "$LAMBDA_FUNCTION_NAME"

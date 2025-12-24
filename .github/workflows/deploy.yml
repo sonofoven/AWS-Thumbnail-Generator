@@ -28,7 +28,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          aws-region: ${{ vars.AWS_REGION }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -38,12 +38,12 @@ jobs:
         if: github.event_name == 'push'
         run: > 
             ./pushImage.sh 
-            "${{ secrets.ECR_REPOSITORY }}" 
-            "${{ secrets.AWS_REGION }}"
+            "${{ vars.ECR_REPOSITORY }}" 
+            "${{ vars.AWS_REGION }}"
         
       - name: Update Lambda to latest image from ECR
         if: github.event_name == 'push'
         run: |
             aws lambda update-function-code \
-              --function-name ${{ secrets.LAMBDA_FUNCTION_NAME }} \
-              --image-uri "${{ secrets.ECR_REPOSITORY }}:latest"
+              --function-name ${{ vars.LAMBDA_FUNCTION_NAME }} \
+              --image-uri "${{ vars.ECR_REPOSITORY }}:latest"

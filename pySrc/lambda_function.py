@@ -6,7 +6,7 @@ import os
 
 destBucket = "novesen-s3-thumbnail-gen-output"
 
-size = (256, 256)
+size = (128, 128)
 s3Client = boto3.client('s3')
 
 
