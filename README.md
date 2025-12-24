@@ -13,7 +13,7 @@ Development of the lambda runtime is made easy by the Github Actions integration
 - S3 event–driven workflow for fully automated processing
 - Infrastructure-as-code with Terraform (IAM, S3, ECR, Lambda)
 - One-command bootstrap to provision everything and push the initial image
-- GitHub Actions integration using repo secrets for ongoing deployments
+- GitHub Actions integration using repo secrets & variables for ongoing deployments
 
 
 
@@ -27,7 +27,7 @@ Development of the lambda runtime is made easy by the Github Actions integration
 │   └── requirements.txt    # Python deps: boto3, Pillow
 ├── scripts
 │   ├── bootstrap.sh        # One-shot provisioning + initial deploy
-│   ├── destroyAll.sh       # Tear down all infra and related secrets
+│   ├── destroyAll.sh       # Tear down all infra and related Github variables
 │   └── pushImage.sh        # Build and push Lambda image to ECR
 └── terraform
     ├── dependencies        # ECR, IAM, S3, and shared infra
@@ -52,7 +52,7 @@ You will need:
 - AWS CLI configured locally
 - Terraform installed
 - Docker with `buildx` support
-- GitHub CLI (`gh`) authenticated against the repository (for managing secrets)
+- GitHub CLI (`gh`) authenticated against the repository (for managing variables)
 - A GitHub repository hosting this project (for CI/CD integration)
 
 
@@ -71,7 +71,7 @@ This script will:
 1. Initialize and apply `terraform/dependencies` to provision core resources (ECR repo, region, and other dependencies), then capture outputs such as `ecr_repository_url`, `aws_region`, and `lambda_func_name`.
 2. Build and push the Lambda container image from `pySrc` to the new ECR repository using `pushImage.sh`.
 3. Initialize and apply `terraform/lambda` to create the Lambda function wired up to the input S3 bucket.
-4. Store the key bootstrap outputs into GitHub repo secrets: `ECR_REPOSITORY`, `AWS_REGION`, and `LAMBDA_FUNCTION_NAME`, enabling a GitHub Actions workflow to build and deploy updates on pushes (typically to `main`).
+4. Store the key bootstrap outputs into GitHub repo variables: `ECR_REPOSITORY`, `AWS_REGION`, and `LAMBDA_FUNCTION_NAME`, enabling a GitHub Actions workflow to build and deploy updates on pushes (typically to `main`).
 
 After this completes, the account is ready to act as a thumbnail generator host.
 
@@ -79,7 +79,7 @@ After this completes, the account is ready to act as a thumbnail generator host.
 
 ## Teardown
 
-To remove all provisioned resources and clean up GitHub secrets:
+To remove all provisioned resources and clean up GitHub variables:
 
 ```bash
 cd scripts
@@ -90,7 +90,7 @@ This script:
 
 - Destroys the Terraform Lambda stack
 - Destroys the Terraform dependencies stack
-- Deletes the GitHub repo secrets `ECR_REPOSITORY`, `AWS_REGION`, and `LAMBDA_FUNCTION_NAME`
+- Deletes the GitHub repo variables `ECR_REPOSITORY`, `AWS_REGION`, and `LAMBDA_FUNCTION_NAME`
 
 
 
@@ -99,7 +99,7 @@ This script:
 This project ships with an automated deployment workflow defined in `.github/workflows/deploy.yml`. On every push to the `main` branch with changes to the workflow or any file under pySrc, GitHub Actions:
 
 1. Checks out the repository.
-2. Configures AWS credentials using the `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and `AWS_REGION` secrets.
+2. Configures AWS credentials using the `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` secrets, and `AWS_REGION` variable.
 3. Uses Docker Buildx to build and push the Lambda container image to the ECR repository specified by the `ECR_REPOSITORY` secret (via `scripts/pushImage.sh`).
 4. Updates the running Lambda function to the newly built `:latest` image in ECR using the `LAMBDA_FUNCTION_NAME` secret.
 
